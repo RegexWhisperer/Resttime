@@ -1,7 +1,7 @@
 Rest Time PWA
 
 檔案：
-  index.html / manifest.webmanifest / sw.js / icons/
+  全部檔案都在同一層（沒有資料夾）
 
 部署到 GitHub Pages：
   1. 在 GitHub 建立新的 repository（Public）
