@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f5f6f8">
+<title>Rest Time</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rest Time">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+    * { box-sizing: border-box; }
+    html, body {
+        margin: 0;
+        padding: 0;
+        min-height: 100%;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC",
+                     "Microsoft JhengHei", sans-serif;
+        background: #f5f6f8;
+        color: #20242a;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+    }
+
+    .app {
+        width: 100%;
+        max-width: 520px;
+        min-height: 100vh;
+        background: #f5f6f8;
+    }
+
+    .header {
+        padding: calc(env(safe-area-inset-top) + 18px) 20px 14px;
+        text-align: center;
+    }
+
+    .title {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 750;
+        letter-spacing: -0.5px;
+    }
+
+    .subtitle {
+        margin-top: 5px;
+        font-size: 13px;
+        color: #737982;
+    }
+
+    .tabs-wrap {
+        padding: 0 16px;
+    }
+
+    .tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 4px;
+        border-radius: 14px;
+        background: #e4e6ea;
+    }
+
+    .tab {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: #6b7078;
+        padding: 12px 8px;
+        border-radius: 11px;
+        font-size: 15px;
+        font-weight: 650;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+
+    .tab.active {
+        background: white;
+        color: #20242a;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+    }
+
+    main {
+        padding: 18px 16px 32px;
+    }
+
+    .panel {
+        display: none;
+        animation: fadeIn 0.18s ease;
+    }
+
+    .panel.active {
+        display: block;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(3px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 2px 12px rgba(25, 30, 40, 0.06);
+    }
+
+    .card-icon {
+        font-size: 30px;
+        margin-bottom: 8px;
+    }
+
+    .card h2 {
+        margin: 0;
+        font-size: 21px;
+    }
+
+    .card p {
+        margin: 8px 0 0;
+        color: #747a82;
+        line-height: 1.5;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-top: 18px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #4a505a;
+        margin-bottom: 6px;
+    }
+
+    .tz-tag {
+        font-weight: 700;
+        color: #0066ff;
+        margin-left: 2px;
+    }
+
+    .tz-group {
+        display: flex;
+        gap: 8px;
+        background: #f0f2f5;
+        padding: 4px;
+        border-radius: 10px;
+    }
+
+    .tz-option {
+        flex: 1;
+        text-align: center;
+    }
+
+    .tz-option input {
+        display: none;
+    }
+
+    .tz-option label {
+        display: block;
+        padding: 8px 4px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #666c75;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .tz-option input:checked + label {
+        background: white;
+        color: #20242a;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .tz-option input:disabled + label {
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .input-control {
+        width: 100%;
+        padding: 12px 14px;
+        font-size: 15px;
+        border: 1px solid #dcdfe4;
+        border-radius: 10px;
+        background: #fafbfc;
+        color: #20242a;
+        outline: none;
+        transition: border-color 0.15s;
+    }
+
+    .input-control:focus {
+        border-color: #0066ff;
+        background: #ffffff;
+    }
+
+    .custom-select-container {
+        position: relative;
+    }
+
+    .select-dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
+        right: 0;
+        max-height: 200px;
+        overflow-y: auto;
+        background: white;
+        border: 1px solid #dcdfe4;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        z-index: 100;
+    }
+
+    .select-dropdown.show {
+        display: block;
+    }
+
+    .select-option {
+        padding: 10px 14px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background 0.1s;
+    }
+
+    .select-option:hover, .select-option.selected {
+        background: #f0f5ff;
+        color: #0066ff;
+        font-weight: 600;
+    }
+
+    .select-option.no-match {
+        color: #999;
+        cursor: default;
+    }
+
+    .dep-datetime-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.8fr;
+        gap: 12px;
+    }
+
+    .otp-group {
+        display: flex;
+        gap: 6px;
+    }
+
+    .otp-input {
+        flex: 1;
+        width: 100%;
+        height: 46px;
+        font-size: 18px;
+        font-weight: 700;
+        text-align: center;
+        border: 1px solid #dcdfe4;
+        border-radius: 10px;
+        background: #fafbfc;
+        color: #20242a;
+        outline: none;
+        transition: all 0.15s ease;
+        -webkit-appearance: none;
+    }
+
+    .otp-input:focus {
+        border-color: #0066ff;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.15);
+    }
+
+    .otp-input:disabled {
+        background-color: #f0f2f5;
+        color: #737982;
+        cursor: not-allowed;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 650;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: opacity 0.15s ease;
+    }
+
+    .btn-primary {
+        background: #0066ff;
+        color: white;
+    }
+
+    .btn-secondary {
+        background: #e4e6ea;
+        color: #4a505a;
+    }
+
+    .btn:active {
+        opacity: 0.85;
+    }
+
+    .output-box {
+        margin-top: 18px;
+        padding: 16px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+    }
+
+    .warning-msg {
+        color: #d93025;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        line-height: 1.5;
+    }
+
+    .output-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px dashed #e2e5e9;
+    }
+
+    .output-item:last-child {
+        border-bottom: none;
+    }
+
+    .output-label {
+        font-size: 14px;
+        color: #666c75;
+    }
+
+    .output-value {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1a1d21;
+    }
+
+    .text-red-bold {
+        color: #d93025 !important;
+        font-weight: 900 !important;
+    }
+
+    .text-green {
+        color: #188038 !important;
+    }
+
+    .countdown-box {
+        margin-top: 14px;
+        padding: 12px;
+        background: #eef5ff;
+        border-radius: 10px;
+        color: #0055cc;
+        text-align: center;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .read-only-display {
+        padding: 12px 14px;
+        font-size: 15px;
+        font-weight: 700;
+        border: 1px solid #dcdfe4;
+        border-radius: 10px;
+        background: #eef2f7;
+        color: #0066ff;
+        text-align: center;
+    }
+
+    .schedule-header {
+        font-size: 13px;
+        font-weight: 700;
+        color: #4a505a;
+        margin: 12px 0 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .otp-input.auto-filled {
+        background: #eef2f7;
+        color: #0066ff;
+    }
+
+    .flex-msg {
+        margin-top: 8px;
+        min-height: 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: #d93025;
+    }
+
+    /* Flexible 模式配色 */
+    html, body, .app { transition: background-color 0.3s ease; }
+    html.flex-mode, html.flex-mode body, html.flex-mode .app { background: #fff6e5; }
+    html.flex-mode .tabs { background: #f1e3c6; }
+    html.flex-mode .btn-primary { background: #e07b00; }
+    html.flex-mode .otp-input:focus,
+    html.flex-mode .input-control:focus { border-color: #e07b00; }
+    html.flex-mode .otp-input:focus { box-shadow: 0 0 0 3px rgba(224, 123, 0, 0.18); }
+    html.flex-mode .otp-input.auto-filled { color: #b45f00; background: #fff1d9; }
+    html.flex-mode .footer { color: #b3a58b; }
+    html.flex-mode #flexScheduleBox {
+        background: #fff3dc;
+        border-color: #f2d6a2;
+        border-left: 5px solid #e07b00;
+    }
+    html.flex-mode #flexScheduleBox .schedule-header { color: #b45f00; }
+    html.flex-mode #flexScheduleBox .output-item { border-bottom-color: #efd3a0; }
+    html.flex-mode #flexScheduleBox .output-label { color: #9a6a2a; }
+    html.flex-mode #flexScheduleBox .output-value { color: #5c3300; }
+    html.flex-mode #flexTzGroup .tz-group { background: #f7ead0; }
+
+    .footer {
+        text-align: center;
+        color: #a0a5ac;
+        font-size: 12px;
+        padding: 0 20px 24px;
+    }
+</style>
+</head>
+
+<body>
+<div class="app">
+    <header class="header">
+        <h1 class="title">Rest Time Calculator</h1>
+        <div class="subtitle">for 777 crew</div>
+    </header>
+
+    <div class="tabs-wrap">
+        <div class="tabs" role="tablist" aria-label="Rest type">
+            <button class="tab active"
+                    id="hotelTab"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="hotelPanel"
+                    onclick="showTab('hotel')">
+                Hotel Rest
+            </button>
+            <button class="tab"
+                    id="inflightTab"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="inflightPanel"
+                    onclick="showTab('inflight')">
+                Inflight Rest
+            </button>
+        </div>
+    </div>
+
+    <main>
+        <!-- Hotel Rest Panel -->
+        <section id="hotelPanel" class="panel active" role="tabpanel">
+            <div class="card">
+                <div class="card-icon">🏨</div>
+                <h2>Hotel Rest</h2>
+                <p>Select station and enter departure time to calculate.</p>
+                
+                <div class="form-group">
+                    <label class="form-label">Timezone Display</label>
+                    <div class="tz-group">
+                        <div class="tz-option">
+                            <input type="radio" id="tzLocal" name="tzDisplay" value="local" checked onchange="onTimezoneChange()">
+                            <label for="tzLocal">Local time</label>
+                        </div>
+                        <div class="tz-option">
+                            <input type="radio" id="tzUTC" name="tzDisplay" value="utc" onchange="onTimezoneChange()">
+                            <label for="tzUTC">UTC time</label>
+                        </div>
+                        <div class="tz-option">
+                            <input type="radio" id="tzTPE" name="tzDisplay" value="tpe" onchange="onTimezoneChange()">
+                            <label for="tzTPE">TPE time</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="stationInput">Station</label>
+                    <div class="custom-select-container">
+                        <input type="text" id="stationInput" class="input-control" placeholder="Type to search or select IATA code" autocomplete="off">
+                        <div id="stationDropdown" class="select-dropdown"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="dep-datetime-grid">
+                        <div>
+                            <label class="form-label">Date (DD)</label>
+                            <div class="otp-group" id="dateOtpGroup">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="D" autocomplete="off">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="D" autocomplete="off">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">
+                                Departure Time <span id="depTzTag" class="tz-tag">(Local)</span>
+                            </label>
+                            <div class="otp-group" id="timeOtpGroup">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="calculateHotelRest()">Calculate</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetHotelRest()">Reset</button>
+                </div>
+
+                <div id="outputArea1" class="output-box" style="display: none;"></div>
+                <div id="outputArea2" class="countdown-box" style="display: none;"></div>
+            </div>
+        </section>
+
+        <!-- Inflight Rest Panel -->
+        <section id="inflightPanel" class="panel" role="tabpanel">
+            <div class="card">
+                <div class="card-icon">✈️</div>
+                <h2>Inflight Rest</h2>
+                <p id="inflightDesc">Select crew composition and enter flight time to calculate.</p>
+
+                <div class="form-group">
+                    <label class="form-label">Purpose</label>
+                    <div class="tz-group">
+                        <div class="tz-option">
+                            <input type="radio" id="purposeLegal" name="purposeType" value="legal" checked onchange="onPurposeChange()">
+                            <label for="purposeLegal">Legal</label>
+                        </div>
+                        <div class="tz-option">
+                            <input type="radio" id="purposeFlexible" name="purposeType" value="flexible" onchange="onPurposeChange()">
+                            <label for="purposeFlexible">Flexible</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 1 INPUTS -->
+                <div class="form-group">
+                    <label class="form-label">Crew Compostion</label>
+                    <div class="tz-group">
+                        <div class="tz-option">
+                            <input type="radio" id="crewMulti" name="crewType" value="multi" checked onchange="onCrewChange()">
+                            <label for="crewMulti">Multi crew</label>
+                        </div>
+                        <div class="tz-option">
+                            <input type="radio" id="crewDouble" name="crewType" value="double" onchange="onCrewChange()">
+                            <label for="crewDouble">Double crew</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="legalContainer">
+                <div class="form-group">
+                    <label class="form-label">Flight Time (HHMM)</label>
+                    <div class="otp-group" id="flightTimeOtpGroup">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                        <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- BUTTON 1: CALCULATE REST TIME -->
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" onclick="calculateRestTimeStep1()">Calculate Rest Time</button>
+                    <button type="button" class="btn btn-secondary" onclick="resetInflightRest()">Reset</button>
+                </div>
+
+                <!-- STEP 1 OUTPUT: REST TIME -->
+                <div id="restTimeBox" class="output-box" style="display: none;"></div>
+
+                <!-- STEP 2 INPUTS (Shows after Step 1) -->
+                <div id="step2Container" style="display: none;">
+                    <hr style="border: 0; border-top: 1px dashed #dcdfe4; margin: 20px 0;">
+                    <p>Define rest sector and enter off time to calculate.</p>
+
+                    <div class="form-group">
+                        <label class="form-label">Sector(s)</label>
+                        <div class="tz-group">
+                            <div class="tz-option">
+                                <input type="radio" id="sector1" name="sectorType" value="1" checked onchange="toggleSectorView()">
+                                <label for="sector1">1 Sector</label>
+                            </div>
+                            <div class="tz-option">
+                                <input type="radio" id="sector2" name="sectorType" value="2" onchange="toggleSectorView()">
+                                <label for="sector2">2 Sectors</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2 Sectors Detailed Inputs -->
+                    <div id="twoSectorsContainer" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">First Sector (HMM)</label>
+                            <div class="otp-group" id="firstSectorOtpGroup">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Second Sector (Auto Calculated)</label>
+                            <div id="secondSectorDisplay" class="read-only-display">--:--</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Off Time (HHMM)</label>
+                        <div class="otp-group" id="offTimeOtpGroup">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <!-- BUTTON 2: CALCULATE REST SCHEDULE -->
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" onclick="calculateScheduleStep2()">Calculate Rest Schedule</button>
+                    </div>
+
+                    <!-- STEP 2 OUTPUT: SCHEDULE -->
+                    <div id="inflightScheduleBox" class="output-box" style="display: none;"></div>
+
+                    <div id="inflightTzGroup" class="form-group" style="display: none;">
+                        <label class="form-label">Timezone Display</label>
+                        <div class="tz-group">
+                            <div class="tz-option">
+                                <input type="radio" id="inflightTzUTC" name="inflightTzDisplay" value="utc" checked onchange="renderInflightSchedule()">
+                                <label for="inflightTzUTC">UTC time</label>
+                            </div>
+                            <div class="tz-option">
+                                <input type="radio" id="inflightTzTPE" name="inflightTzDisplay" value="tpe" onchange="renderInflightSchedule()">
+                                <label for="inflightTzTPE">TPE time</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+                <!-- /legalContainer -->
+
+                <!-- FLEXIBLE -->
+                <div id="flexContainer" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Rest Start (HHMM)</label>
+                        <div class="otp-group" id="flexRestStartOtpGroup">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Sector(s)</label>
+                        <div class="tz-group">
+                            <div class="tz-option">
+                                <input type="radio" id="flexSector1" name="flexSectorType" value="1" checked onchange="toggleFlexSectorView()">
+                                <label for="flexSector1">1 Sector</label>
+                            </div>
+                            <div class="tz-option">
+                                <input type="radio" id="flexSector2" name="flexSectorType" value="2" onchange="toggleFlexSectorView()">
+                                <label for="flexSector2">2 Sectors</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Rest time (per person) (HMM)</label>
+                        <div class="otp-group" id="flexRestTimeOtpGroup">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div id="flexTwoSectorsContainer" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">First sector (HMM)</label>
+                            <div class="otp-group" id="flexFirstOtpGroup">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Second sector (HMM)</label>
+                            <div class="otp-group" id="flexSecondOtpGroup">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="H" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]*" class="otp-input" placeholder="M" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="flexSectorMsg" class="flex-msg"></div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-primary" onclick="calculateFlexSchedule()">Calculate Rest Schedule</button>
+                        <button type="button" class="btn btn-secondary" onclick="resetInflightRest()">Reset</button>
+                    </div>
+
+                    <div id="flexScheduleBox" class="output-box" style="display: none;"></div>
+
+                    <div id="flexTzGroup" class="form-group" style="display: none;">
+                        <label class="form-label">Timezone Display</label>
+                        <div class="tz-group">
+                            <div class="tz-option">
+                                <input type="radio" id="flexTzUTC" name="flexTzDisplay" value="utc" checked onchange="renderFlexSchedule()">
+                                <label for="flexTzUTC">UTC time</label>
+                            </div>
+                            <div class="tz-option">
+                                <input type="radio" id="flexTzTPE" name="flexTzDisplay" value="tpe" onchange="renderFlexSchedule()">
+                                <label for="flexTzTPE">TPE time</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <div class="footer">
+    <div>Rest Time Calculator by Yeh</div>
+    <div>based on station information 2026-08-13</div>
+</div>
+
+<script>
+// PWA: 註冊 Service Worker（需 HTTPS 或 localhost）
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+}
+
+const STATIONS_DB = {
+    "AMS <PAX>": { dstRule: "EU", offsetStd: 1, offsetDst: 2, wakeOffset: { h: 3, m: 15 }, pickOffset: { h: 2, m: 15 } },
+    "AMS <CGO>": { dstRule: "EU", offsetStd: 1, offsetDst: 2, wakeOffset: { h: 3, m: 0 },  pickOffset: { h: 2, m: 0 } },
+    "ANC":       { dstRule: "NA", offsetStd: -9, offsetDst: -8, wakeOffset: { h: 2, m: 0 }, pickOffset: { h: 1, m: 0 } },
+    "CGK":       { dstRule: "NI", offsetStd: 7, offsetDst: 7, wakeOffset: { h: 2, m: 40 }, pickOffset: { h: 1, m: 40 } },
+    "CTS":       { dstRule: "NI", offsetStd: 9, offsetDst: 9, wakeOffset: { h: 3, m: 0 }, pickOffset: { h: 2, m: 0 } },
+    "DPS":       { dstRule: "NI", offsetStd: 8, offsetDst: 8, wakeOffset: { h: 2, m: 45 }, pickOffset: { h: 1, m: 45 } },
+    "FRA <PAX>": { dstRule: "EU", offsetStd: 1, offsetDst: 2, wakeOffset: { h: 3, m: 25 }, pickOffset: { h: 2, m: 25 } },
+    "FRA <CGO>": { dstRule: "EU", offsetStd: 1, offsetDst: 2, wakeOffset: { h: 3, m: 0 },  pickOffset: { h: 2, m: 0 } },
+    "JFK <PAX>": { dstRule: "NA", offsetStd: -5, offsetDst: -4, wakeOffset: { h: 3, m: 0 },  pickOffset: { h: 2, m: 0 } },
+    "JFK <CGO>": { dstRule: "NA", offsetStd: -5, offsetDst: -4, wakeOffset: { h: 2, m: 30 },  pickOffset: { h: 1, m: 30 } },
+    "KIX <CGO>": { dstRule: "NI", offsetStd: 9, offsetDst: 9, wakeOffset: { h: 2, m: 0 }, pickOffset: { h: 1, m: 0 } },
+    "KUL <PAX>": { dstRule: "NI", offsetStd: 8, offsetDst: 8, wakeOffset: { h: 3, m: 10 }, pickOffset: { h: 2, m: 10 } },
+    "KUL <CGO>": { dstRule: "NI", offsetStd: 8, offsetDst: 8, wakeOffset: { h: 3, m: 0 }, pickOffset: { h: 2, m: 0 } }, 
+    "LAX <PAX>": { dstRule: "NA", offsetStd: -8, offsetDst: -7, wakeOffset: { h: 3, m: 0 },  pickOffset: { h: 2, m: 0 } },
+    "LAX <CGO>": { dstRule: "NA", offsetStd: -8, offsetDst: -7, wakeOffset: { h: 2, m: 0 },  pickOffset: { h: 1, m: 15 } },
+    "MEL":       { dstRule: "AU", offsetStd: 10, offsetDst: 11, wakeOffset: { h: 3, m: 30 }, pickOffset: { h: 2, m: 20 } },
+    "MIA":       { dstRule: "NA", offsetStd: -5, offsetDst: -4, wakeOffset: { h: 2, m: 15 },  pickOffset: { h: 1, m: 15 } },
+    "NGO <CGO>": { dstRule: "NI", offsetStd: 9, offsetDst: 9, wakeOffset: { h: 2, m: 30 }, pickOffset: { h: 1, m: 20 } },
+    "NRT <CGO>": { dstRule: "NI", offsetStd: 9, offsetDst: 9, wakeOffset: { h: 2, m: 40 }, pickOffset: { h: 1, m: 40 } },
+    "ONT":       { dstRule: "NA", offsetStd: -8, offsetDst: -7, wakeOffset: { h: 2, m: 40 }, pickOffset: { h: 1, m: 40 } },
+    "ORD":       { dstRule: "NA", offsetStd: -6, offsetDst: -5, wakeOffset: { h: 2, m: 30 }, pickOffset: { h: 1, m: 30 } },
+    "SEA <CGO>": { dstRule: "NA", offsetStd: -8, offsetDst: -7, wakeOffset: { h: 2, m: 20 },  pickOffset: { h: 1, m: 20 } },
+    "SFO <PAX>": { dstRule: "NA", offsetStd: -8, offsetDst: -7, wakeOffset: { h: 3, m: 0 },  pickOffset: { h: 2, m: 0 } },
+    "SFO <CGO>": { dstRule: "NA", offsetStd: -8, offsetDst: -7, wakeOffset: { h: 2, m: 20 },  pickOffset: { h: 1, m: 20 } },
+    "SIN <CGO>": { dstRule: "NI", offsetStd: 8, offsetDst: 8, wakeOffset: { h: 2, m: 30 }, pickOffset: { h: 1, m: 40 } },
+    "SYD":       { dstRule: "AU", offsetStd: 10, offsetDst: 11, wakeOffset: { h: 2, m: 55 }, pickOffset: { h: 1, m: 55 } },
+    "YVR":       { dstRule: "NA", offsetStd: -8, offsetDst: -7, wakeOffset: { h: 2, m: 55 }, pickOffset: { h: 1, m: 55 } }
+};
+
+let calculatedState = null;
+let countdownTimer = null;
+let isLocked = false;
+let selectedStationKey = "";
+
+// Inflight State
+let currentRestTimeMins = null;
+let calculatedSchedulesUtc = [];
+
+document.addEventListener("DOMContentLoaded", () => {
+    // 1. Hotel rest 跨欄跳格
+    setupHotelDateAndOtpGroup();
+    
+    // 普通 OTP 欄位設定
+    setupOtpGroup("timeOtpGroup");
+    setupOtpGroup("flightTimeOtpGroup", resetInflightStep2);
+    setupOtpGroup("offTimeOtpGroup");
+    
+    // 3. First sector HMM 格式專用設定
+    setupFirstSectorOtpGroup();
+    
+    // Flexible inflight rest
+    setupOtpGroup("flexRestStartOtpGroup", resetFlexSchedule);
+    FLEX_GROUPS.forEach(id => setupOtpGroup(id, () => onFlexFieldInput(id)));
+
+    setupSearchableSelect();
+});
+
+// Hotel rest 跨欄跳格設定
+function setupHotelDateAndOtpGroup() {
+    const dateInputs = Array.from(document.querySelectorAll("#dateOtpGroup .otp-input"));
+    const timeInputs = Array.from(document.querySelectorAll("#timeOtpGroup .otp-input"));
+    const allInputs = [...dateInputs, ...timeInputs];
+
+    allInputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            if (e.target.value && index < allInputs.length - 1) {
+                allInputs[index + 1].focus();
+            }
+        });
+
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && !input.value && index > 0) {
+                allInputs[index - 1].focus();
+            }
+        });
+
+        input.addEventListener("paste", (e) => {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData)
+                .getData("text")
+                .replace(/[^0-9]/g, "")
+                .slice(0, allInputs.length - index);
+
+            pastedData.split("").forEach((char, i) => {
+                if (allInputs[index + i]) allInputs[index + i].value = char;
+            });
+
+            const nextIndex = Math.min(index + pastedData.length, allInputs.length - 1);
+            allInputs[nextIndex].focus();
+        });
+    });
+}
+
+function setupOtpGroup(groupId, onInputCallback) {
+    const container = document.getElementById(groupId);
+    if (!container) return;
+    const inputs = Array.from(container.querySelectorAll(".otp-input"));
+
+    inputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            if (e.target.value && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            if (onInputCallback) onInputCallback();
+        });
+
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && !input.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+
+        input.addEventListener("paste", (e) => {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData)
+                .getData("text")
+                .replace(/[^0-9]/g, "")
+                .slice(0, inputs.length - index);
+
+            pastedData.split("").forEach((char, i) => {
+                if (inputs[index + i]) inputs[index + i].value = char;
+            });
+
+            const nextIndex = Math.min(index + pastedData.length, inputs.length - 1);
+            inputs[nextIndex].focus();
+            if (onInputCallback) onInputCallback();
+        });
+    });
+}
+
+// First Sector 專用（HMM 3 碼格式）
+function setupFirstSectorOtpGroup() {
+    const container = document.getElementById("firstSectorOtpGroup");
+    if (!container) return;
+    const inputs = Array.from(container.querySelectorAll(".otp-input"));
+
+    inputs.forEach((input, index) => {
+        input.addEventListener("input", (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, "");
+            if (e.target.value && index < inputs.length - 1) {
+                inputs[index + 1].focus();
+            }
+            updateSecondSectorCalculation();
+        });
+
+        input.addEventListener("keydown", (e) => {
+            if (e.key === "Backspace" && !input.value && index > 0) {
+                inputs[index - 1].focus();
+            }
+        });
+
+        input.addEventListener("paste", (e) => {
+            e.preventDefault();
+            const pastedData = (e.clipboardData || window.clipboardData)
+                .getData("text")
+                .replace(/[^0-9]/g, "")
+                .slice(0, inputs.length - index);
+
+            pastedData.split("").forEach((char, i) => {
+                if (inputs[index + i]) inputs[index + i].value = char;
+            });
+
+            const nextIndex = Math.min(index + pastedData.length, inputs.length - 1);
+            inputs[nextIndex].focus();
+            updateSecondSectorCalculation();
+        });
+    });
+}
+
+function getOtpValue(groupId) {
+    const inputs = document.querySelectorAll(`#${groupId} .otp-input`);
+    return Array.from(inputs).map(i => i.value).join("");
+}
+
+function showTab(tab) {
+    const hotelTab = document.getElementById("hotelTab");
+    const inflightTab = document.getElementById("inflightTab");
+    const hotelPanel = document.getElementById("hotelPanel");
+    const inflightPanel = document.getElementById("inflightPanel");
+
+    const isHotel = tab === "hotel";
+
+    hotelTab.classList.toggle("active", isHotel);
+    inflightTab.classList.toggle("active", !isHotel);
+
+    hotelTab.setAttribute("aria-selected", isHotel);
+    inflightTab.setAttribute("aria-selected", !isHotel);
+
+    hotelPanel.classList.toggle("active", isHotel);
+    inflightPanel.classList.toggle("active", !isHotel);
+    updateTheme();
+}
+
+// ---------------- Hotel Rest 計算 ----------------
+function setupSearchableSelect() {
+    const input = document.getElementById("stationInput");
+    const dropdown = document.getElementById("stationDropdown");
+    const stationKeys = Object.keys(STATIONS_DB).sort();
+
+    function renderDropdown(filterText = "") {
+        dropdown.innerHTML = "";
+        const query = filterText.trim().toUpperCase();
+        const filtered = stationKeys.filter(key => key.includes(query));
+
+        if (filtered.length === 0) {
+            dropdown.innerHTML = `<div class="select-option no-match">找不到符合的 Station</div>`;
+            return;
+        }
+
+        filtered.forEach(key => {
+            const div = document.createElement("div");
+            div.className = `select-option ${key === selectedStationKey ? 'selected' : ''}`;
+            div.innerText = key;
+            div.addEventListener("mousedown", (e) => {
+                e.preventDefault();
+                selectedStationKey = key;
+                input.value = key;
+                dropdown.classList.remove("show");
+            });
+            dropdown.appendChild(div);
+        });
+    }
+
+    input.addEventListener("focus", () => {
+        if (!isLocked) {
+            renderDropdown(input.value);
+            dropdown.classList.add("show");
+        }
+    });
+
+    input.addEventListener("input", () => {
+        selectedStationKey = "";
+        renderDropdown(input.value);
+        dropdown.classList.add("show");
+    });
+
+    input.addEventListener("blur", () => {
+        dropdown.classList.remove("show");
+        if (!STATIONS_DB[input.value]) {
+            input.value = selectedStationKey || "";
+        }
+    });
+}
+
+function isDSTActive(utcDate, rule) {
+    if (rule === "NI") return false;
+    const year = utcDate.getUTCFullYear();
+    
+    if (rule === "EU") {
+        const dstStart = new Date(Date.UTC(year, 2, getLastSundayOfMonth(year, 2), 1, 0));
+        const dstEnd = new Date(Date.UTC(year, 9, getLastSundayOfMonth(year, 9), 1, 0));
+        return utcDate >= dstStart && utcDate < dstEnd;
+    }
+    
+    if (rule === "NA") {
+        const dstStart = new Date(Date.UTC(year, 2, getNthSundayOfMonth(year, 2, 2), 11, 0));
+        const dstEnd = new Date(Date.UTC(year, 10, getNthSundayOfMonth(year, 10, 1), 10, 0));
+        return utcDate >= dstStart && utcDate < dstEnd;
+    }
+
+    if (rule === "AU") {
+        const dstStart = new Date(Date.UTC(year, 9, getNthSundayOfMonth(year, 9, 1), 16, 0));
+        const dstEnd = new Date(Date.UTC(year, 3, getNthSundayOfMonth(year, 3, 1), 16, 0));
+        return utcDate >= dstStart || utcDate < dstEnd;
+    }
+
+    return false;
+}
+
+function getLastSundayOfMonth(year, month) {
+    const date = new Date(Date.UTC(year, month + 1, 0));
+    return date.getUTCDate() - date.getUTCDay();
+}
+
+function getNthSundayOfMonth(year, month, n) {
+    const date = new Date(Date.UTC(year, month, 1));
+    let sundayCount = 0;
+    for (let d = 1; d <= 31; d++) {
+        date.setUTCDate(d);
+        if (date.getUTCMonth() !== month) break;
+        if (date.getUTCDay() === 0) {
+            sundayCount++;
+            if (sundayCount === n) return d;
+        }
+    }
+    return 1;
+}
+
+function calculateHotelRest() {
+    const stationKey = selectedStationKey || document.getElementById("stationInput").value.trim().toUpperCase();
+    const dateInputRaw = getOtpValue("dateOtpGroup");
+    const timeInputRaw = getOtpValue("timeOtpGroup");
+    const inputTz = document.querySelector('input[name="tzDisplay"]:checked').value;
+
+    const outputArea1 = document.getElementById("outputArea1");
+    const outputArea2 = document.getElementById("outputArea2");
+
+    outputArea1.style.display = "block";
+    outputArea2.style.display = "none";
+    if (countdownTimer) clearInterval(countdownTimer);
+
+    const warnings = [];
+    if (!stationKey || !STATIONS_DB[stationKey]) warnings.push("請選擇正確的 Station");
+    
+    const day = parseInt(dateInputRaw, 10);
+    if (!dateInputRaw || isNaN(day) || day < 1 || day > 31) {
+        warnings.push("請輸入正確的 Departure Date (日期 1-31)");
+    }
+
+    if (!timeInputRaw || timeInputRaw.length !== 4 || isNaN(timeInputRaw)) {
+        warnings.push("請輸入正確的 Departure Time (4碼時間，如 1350)");
+    } else {
+        const hours = parseInt(timeInputRaw.substring(0, 2), 10);
+        const minutes = parseInt(timeInputRaw.substring(2, 4), 10);
+        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+            warnings.push("Departure Time 時間格式不正確 (小時: 00-23, 分鐘: 00-59)");
+        }
+    }
+
+    if (warnings.length > 0) {
+        outputArea1.innerHTML = `<div class="warning-msg">${warnings.join("<br>")}</div>`;
+        calculatedState = null;
+        return;
+    }
+
+    const station = STATIONS_DB[stationKey];
+    const now = new Date();
+    
+    const hours = parseInt(timeInputRaw.substring(0, 2), 10);
+    const minutes = parseInt(timeInputRaw.substring(2, 4), 10);
+
+    let year = now.getUTCFullYear();
+    let month = now.getUTCMonth();
+    const currentDay = now.getUTCDate();
+
+    if (day < currentDay) {
+        month += 1;
+        if (month > 11) {
+            month = 0;
+            year += 1;
+        }
+    }
+    
+    let utcDepDate = new Date(Date.UTC(year, month, day, hours, minutes));
+    let stationOffset = 0;
+
+    if (inputTz === "local") {
+        let isDst = isDSTActive(utcDepDate, station.dstRule);
+        stationOffset = isDst ? station.offsetDst : station.offsetStd;
+        utcDepDate.setUTCHours(utcDepDate.getUTCHours() - stationOffset);
+        
+        isDst = isDSTActive(utcDepDate, station.dstRule);
+        stationOffset = isDst ? station.offsetDst : station.offsetStd;
+    } else if (inputTz === "tpe") {
+        utcDepDate.setUTCHours(utcDepDate.getUTCHours() - 8);
+        let isDst = isDSTActive(utcDepDate, station.dstRule);
+        stationOffset = isDst ? station.offsetDst : station.offsetStd;
+    } else if (inputTz === "utc") {
+        let isDst = isDSTActive(utcDepDate, station.dstRule);
+        stationOffset = isDst ? station.offsetDst : station.offsetStd;
+    }
+
+    let utcWake = new Date(utcDepDate.getTime() - (station.wakeOffset.h * 3600 + station.wakeOffset.m * 60) * 1000);
+    let utcPick = new Date(utcDepDate.getTime() - (station.pickOffset.h * 3600 + station.pickOffset.m * 60) * 1000);
+
+    calculatedState = { utcDepDate, utcWake, utcPick, stationOffset };
+
+    setLockState(true);
+    renderOutput();
+
+    outputArea2.style.display = "block";
+    startCountdown();
+}
+
+function setLockState(locked) {
+    isLocked = locked;
+    document.getElementById("stationInput").disabled = locked;
+    const otpInputs = document.querySelectorAll("#hotelPanel .otp-input");
+    otpInputs.forEach(i => i.disabled = locked);
+}
+
+function updateDepTzTag() {
+    const selectedTz = document.querySelector('input[name="tzDisplay"]:checked').value;
+    const tagElem = document.getElementById("depTzTag");
+    
+    if (selectedTz === "local") tagElem.innerText = "(Local)";
+    if (selectedTz === "utc") tagElem.innerText = "(UTC)";
+    if (selectedTz === "tpe") tagElem.innerText = "(TPE)";
+}
+
+function renderOutput() {
+    if (!calculatedState) return;
+
+    const selectedTz = document.querySelector('input[name="tzDisplay"]:checked').value;
+    const outputArea1 = document.getElementById("outputArea1");
+
+    let offsetHours = 0;
+    if (selectedTz === "local") offsetHours = calculatedState.stationOffset;
+    if (selectedTz === "utc") offsetHours = 0;
+    if (selectedTz === "tpe") offsetHours = 8;
+
+    const wakeFormatted = formatDateTime(calculatedState.utcWake, offsetHours);
+    const pickFormatted = formatDateTime(calculatedState.utcPick, offsetHours);
+
+    const diffMinutes = Math.round((calculatedState.utcPick.getTime() - calculatedState.utcWake.getTime()) / 60000);
+
+    let wakeClass = "output-value";
+    let pickClass = "output-value";
+
+    if (diffMinutes < 60) {
+        pickClass += " text-red-bold";
+    } else if (diffMinutes > 60) {
+        wakeClass += " text-green";
+    }
+
+    outputArea1.innerHTML = `
+        <div class="output-item">
+            <span class="output-label">Wake up time</span>
+            <span class="${wakeClass}">${wakeFormatted}</span>
+        </div>
+        <div class="output-item">
+            <span class="output-label">Pick up time</span>
+            <span class="${pickClass}">${pickFormatted}</span>
+        </div>
+    `;
+}
+
+function formatDateTime(utcDate, offsetHours) {
+    const localDate = new Date(utcDate.getTime() + offsetHours * 3600000);
+    const day = String(localDate.getUTCDate()).padStart(2, '0');
+    const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+    const hours = String(localDate.getUTCHours()).padStart(2, '0');
+    const minutes = String(localDate.getUTCMinutes()).padStart(2, '0');
+    
+    return `${month}/${day} ${hours}:${minutes}`;
+}
+
+function startCountdown() {
+    updateCountdownText();
+    countdownTimer = setInterval(updateCountdownText, 1000);
+}
+
+function updateCountdownText() {
+    if (!calculatedState) return;
+
+    const outputArea2 = document.getElementById("outputArea2");
+    const now = new Date();
+    const diffMs = calculatedState.utcWake.getTime() - now.getTime();
+
+    if (diffMs <= 0) {
+        outputArea2.innerText = "Wake up time has passed";
+        return;
+    }
+
+    const totalSecs = Math.floor(diffMs / 1000);
+    const days = Math.floor(totalSecs / (3600 * 24));
+    const hours = Math.floor((totalSecs % (3600 * 24)) / 3600);
+    const mins = Math.floor((totalSecs % 3600) / 60);
+    const secs = totalSecs % 60;
+
+    let text = "";
+    if (days > 0) text += `${days} day${days > 1 ? 's' : ''} `;
+    text += `${String(hours).padStart(2, '0')} hr ${String(mins).padStart(2, '0')} min ${String(secs).padStart(2, '0')} sec till Wake up`;
+
+    outputArea2.innerText = text;
+}
+
+function onTimezoneChange() {
+    if (!isLocked) {
+        updateDepTzTag();
+    }
+    if (calculatedState) {
+        renderOutput();
+    }
+}
+
+function resetHotelRest() {
+    setLockState(false);
+
+    selectedStationKey = "";
+    document.getElementById("stationInput").value = "";
+    
+    const otpInputs = document.querySelectorAll("#hotelPanel .otp-input");
+    otpInputs.forEach(i => i.value = "");
+
+    document.getElementById("tzLocal").checked = true;
+    updateDepTzTag();
+
+    const outputArea1 = document.getElementById("outputArea1");
+    const outputArea2 = document.getElementById("outputArea2");
+    
+    outputArea1.style.display = "none";
+    outputArea1.innerHTML = "";
+    outputArea2.style.display = "none";
+    outputArea2.innerText = "";
+
+    if (countdownTimer) clearInterval(countdownTimer);
+    calculatedState = null;
+}
+
+// ---------------- Inflight Rest 計算 ----------------
+function getMinutesFromTimeString(str) {
+    if (!str || isNaN(str)) return null;
+    let h = 0, m = 0;
+    if (str.length === 3) {
+        h = parseInt(str.substring(0, 1), 10);
+        m = parseInt(str.substring(1, 3), 10);
+    } else if (str.length === 4) {
+        h = parseInt(str.substring(0, 2), 10);
+        m = parseInt(str.substring(2, 4), 10);
+    } else {
+        return null;
+    }
+    if (h < 0 || h > 23 || m < 0 || m > 59) return null;
+    return h * 60 + m;
+}
+
+function formatMinutesToHHMM(totalMins) {
+    let m = ((totalMins % 1440) + 1440) % 1440;
+    const hh = String(Math.floor(m / 60)).padStart(2, '0');
+    const mm = String(m % 60).padStart(2, '0');
+    return `${hh}:${mm}`;
+}
+
+function toggleSectorView() {
+    const sectorType = document.querySelector('input[name="sectorType"]:checked').value;
+    const twoSectorsContainer = document.getElementById("twoSectorsContainer");
+    twoSectorsContainer.style.display = (sectorType === "2") ? "block" : "none";
+    
+    if (sectorType === "2") {
+        updateSecondSectorCalculation();
+    }
+    
+    calculatedSchedulesUtc = [];
+    document.getElementById("inflightScheduleBox").style.display = "none";
+    document.getElementById("inflightScheduleBox").innerHTML = "";
+    document.getElementById("inflightTzGroup").style.display = "none";
+}
+
+function resetInflightStep2() {
+    currentRestTimeMins = null;
+    calculatedSchedulesUtc = [];
+    document.getElementById("restTimeBox").style.display = "none";
+    document.getElementById("restTimeBox").innerHTML = "";
+    document.getElementById("step2Container").style.display = "none";
+    document.getElementById("inflightScheduleBox").style.display = "none";
+    document.getElementById("inflightScheduleBox").innerHTML = "";
+    document.getElementById("inflightTzGroup").style.display = "none";
+    document.getElementById("secondSectorDisplay").innerText = "--:--";
+}
+
+function calculateRestTimeStep1() {
+    resetInflightStep2();
+
+    const rawFlightTime = getOtpValue("flightTimeOtpGroup");
+    const crewType = document.querySelector('input[name="crewType"]:checked').value;
+    const restTimeBox = document.getElementById("restTimeBox");
+
+    const flightMins = getMinutesFromTimeString(rawFlightTime);
+    if (flightMins === null) {
+        restTimeBox.style.display = "block";
+        restTimeBox.innerHTML = `<div class="warning-msg">請輸入正確的 Flight Time (4碼數字)</div>`;
+        return;
+    }
+
+    if (crewType === "multi" && flightMins > 16 * 60) {
+        restTimeBox.style.display = "block";
+        restTimeBox.innerHTML = `<div class="warning-msg">Exceeds Maximum Flight time.</div>`;
+        return;
+    }
+    if (crewType === "double" && flightMins > 18 * 60) {
+        restTimeBox.style.display = "block";
+        restTimeBox.innerHTML = `<div class="warning-msg">Exceeds Maximum Flight time.</div>`;
+        return;
+    }
+
+    if (flightMins <= 75) {
+        restTimeBox.style.display = "block";
+        restTimeBox.innerHTML = `<div class="warning-msg">Flight Time 必須大於 01:15 (75 分鐘)</div>`;
+        return;
+    }
+
+    const totalRestMins = flightMins - 75;
+    const divisor = (crewType === "multi") ? 3 : 2;
+    currentRestTimeMins = Math.floor(totalRestMins / divisor);
+
+    restTimeBox.style.display = "block";
+    restTimeBox.innerHTML = `
+        <div class="output-item">
+            <span class="output-label">Rest time (per person)</span>
+            <span class="output-value text-green">${formatMinutesToHHMM(currentRestTimeMins)}</span>
+        </div>
+    `;
+
+    const step2Container = document.getElementById("step2Container");
+    step2Container.style.display = "block";
+    
+    toggleSectorView();
+}
+
+function updateSecondSectorCalculation() {
+    if (currentRestTimeMins === null) return;
+
+    const rawFirstSector = getOtpValue("firstSectorOtpGroup");
+    const display = document.getElementById("secondSectorDisplay");
+    const firstMins = getMinutesFromTimeString(rawFirstSector);
+
+    if (firstMins !== null) {
+        const secondMins = currentRestTimeMins - firstMins;
+        if (secondMins === 0) {
+            display.innerHTML = `<span style="color:#d93025; font-weight:700;">Please select 1 sector</span>`;
+            return;
+        } else if (secondMins > 0) {
+            display.innerText = formatMinutesToHHMM(secondMins);
+            return;
+        } else {
+            display.innerHTML = `<span style="color:#d93025; font-weight:700;">Exceeds Rest Time!</span>`;
+            return;
+        }
+    }
+    display.innerText = "--:--";
+}
+
+function calculateScheduleStep2() {
+    const rawOffTime = getOtpValue("offTimeOtpGroup");
+    const crewType = document.querySelector('input[name="crewType"]:checked').value;
+    const sectorType = document.querySelector('input[name="sectorType"]:checked').value;
+    const scheduleBox = document.getElementById("inflightScheduleBox");
+
+    scheduleBox.style.display = "block";
+
+    const offMins = getMinutesFromTimeString(rawOffTime);
+    if (offMins === null) {
+        scheduleBox.innerHTML = `<div class="warning-msg">請輸入正確的 Off Time (4碼數字，如 2300)</div>`;
+        document.getElementById("inflightTzGroup").style.display = "none";
+        return;
+    }
+
+    calculatedSchedulesUtc = [];
+    let currentStart = offMins + 15;
+
+    if (sectorType === "1") {
+        const count = (crewType === "multi") ? 3 : 2;
+        for (let i = 1; i <= count; i++) {
+            let currentEnd = currentStart + currentRestTimeMins;
+            calculatedSchedulesUtc.push({
+                label: `Rest ${i}`,
+                startMins: currentStart,
+                endMins: currentEnd
+            });
+            currentStart = currentEnd;
+        }
+    } else {
+        const rawFirstSector = getOtpValue("firstSectorOtpGroup");
+        const firstSectorMins = getMinutesFromTimeString(rawFirstSector);
+
+        if (firstSectorMins === null) {
+            scheduleBox.innerHTML = `<div class="warning-msg">請輸入正確的 First Sector 時間 (3碼數字)</div>`;
+            document.getElementById("inflightTzGroup").style.display = "none";
+            return;
+        }
+
+        const secondSectorMins = currentRestTimeMins - firstSectorMins;
+        if (secondSectorMins < 0) {
+            scheduleBox.innerHTML = `<div class="warning-msg">First Sector 不能大於 Rest Time</div>`;
+            document.getElementById("inflightTzGroup").style.display = "none";
+            return;
+        }
+
+        const count = (crewType === "multi") ? 6 : 4;
+        const halfCount = count / 2;
+        for (let i = 1; i <= count; i++) {
+            let dur = (i <= halfCount) ? firstSectorMins : secondSectorMins;
+            let currentEnd = currentStart + dur;
+            calculatedSchedulesUtc.push({
+                label: `Rest ${i}`,
+                startMins: currentStart,
+                endMins: currentEnd
+            });
+            currentStart = currentEnd;
+        }
+    }
+
+    renderInflightSchedule();
+    document.getElementById("inflightTzGroup").style.display = "block";
+}
+
+function renderInflightSchedule() {
+    if (!calculatedSchedulesUtc || calculatedSchedulesUtc.length === 0) return;
+
+    const scheduleBox = document.getElementById("inflightScheduleBox");
+    const selectedTz = document.querySelector('input[name="inflightTzDisplay"]:checked').value;
+    const offsetMins = (selectedTz === "tpe") ? 8 * 60 : 0;
+
+    let html = `<div class="schedule-header">Rest Schedule (${selectedTz.toUpperCase()})</div>`;
+    
+    calculatedSchedulesUtc.forEach(item => {
+        const startStr = formatMinutesToHHMM(item.startMins + offsetMins);
+        const endStr = formatMinutesToHHMM(item.endMins + offsetMins);
+        html += `
+            <div class="output-item">
+                <span class="output-label">${item.label}</span>
+                <span class="output-value">${startStr} - ${endStr}</span>
+            </div>
+        `;
+    });
+
+    scheduleBox.innerHTML = html;
+}
+
+// ---------------- Inflight Rest：Purpose / Flexible ----------------
+const FLEX_GROUPS = ["flexRestTimeOtpGroup", "flexFirstOtpGroup", "flexSecondOtpGroup"];
+let flexUserOrder = [];          // 使用者手動輸入的欄位（由舊到新）
+let flexSchedulesUtc = [];
+
+function updateTheme() {
+    const flexible = document.querySelector('input[name="purposeType"]:checked').value === "flexible";
+    const inflight = document.getElementById("inflightTab").classList.contains("active");
+    const on = flexible && inflight;
+    document.documentElement.classList.toggle("flex-mode", on);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", on ? "#fff6e5" : "#f5f6f8");
+}
+
+function onPurposeChange() {
+    const flexible = document.querySelector('input[name="purposeType"]:checked').value === "flexible";
+    document.getElementById("legalContainer").style.display = flexible ? "none" : "block";
+    document.getElementById("flexContainer").style.display = flexible ? "block" : "none";
+    document.getElementById("inflightDesc").innerText = flexible
+        ? "Select crew composition, enter rest start and rest time to calculate."
+        : "Select crew composition and enter flight time to calculate.";
+    updateTheme();
+}
+
+function onCrewChange() {
+    resetInflightStep2();
+    resetFlexSchedule();
+}
+
+function resetFlexSchedule() {
+    flexSchedulesUtc = [];
+    document.getElementById("flexScheduleBox").style.display = "none";
+    document.getElementById("flexScheduleBox").innerHTML = "";
+    document.getElementById("flexTzGroup").style.display = "none";
+}
+
+function setGroupValue(groupId, str, auto) {
+    const inputs = document.querySelectorAll(`#${groupId} .otp-input`);
+    inputs.forEach((inp, i) => {
+        inp.value = str[i] || "";
+        inp.classList.toggle("auto-filled", !!auto && !!str);
+    });
+}
+
+function clearGroup(groupId) { setGroupValue(groupId, "", false); }
+
+// 3 碼 HMM → 分鐘；未完整或分鐘 > 59 回傳 null
+function getMins3(groupId) {
+    const raw = getOtpValue(groupId);
+    if (raw.length !== 3 || isNaN(raw)) return null;
+    const h = parseInt(raw[0], 10), m = parseInt(raw.slice(1), 10);
+    if (m > 59) return null;
+    return h * 60 + m;
+}
+
+function minsToHMM(v) {
+    return `${Math.floor(v / 60)}${String(v % 60).padStart(2, "0")}`;
+}
+
+function toggleFlexSectorView() {
+    const two = document.querySelector('input[name="flexSectorType"]:checked').value === "2";
+    document.getElementById("flexTwoSectorsContainer").style.display = two ? "block" : "none";
+    document.getElementById("flexSectorMsg").innerText = "";
+    clearGroup("flexFirstOtpGroup");
+    clearGroup("flexSecondOtpGroup");
+    // Rest time 欄位保留目前輸入，但不再視為自動計算值
+    document.querySelectorAll("#flexRestTimeOtpGroup .otp-input").forEach(i => i.classList.remove("auto-filled"));
+    flexUserOrder = (two && getOtpValue("flexRestTimeOtpGroup").length > 0) ? ["flexRestTimeOtpGroup"] : [];
+    resetFlexSchedule();
+}
+
+function onFlexFieldInput(groupId) {
+    resetFlexSchedule();
+    document.getElementById("flexSectorMsg").innerText = "";
+    if (document.querySelector('input[name="flexSectorType"]:checked').value !== "2") return;
+
+    document.querySelectorAll(`#${groupId} .otp-input`).forEach(i => i.classList.remove("auto-filled"));
+    flexUserOrder = flexUserOrder.filter(id => id !== groupId);
+    if (getOtpValue(groupId).length > 0) flexUserOrder.push(groupId);
+    flexUserOrder = flexUserOrder.slice(-2);
+
+    // 不是使用者輸入的欄位一律先清空
+    FLEX_GROUPS.forEach(id => { if (!flexUserOrder.includes(id)) clearGroup(id); });
+    if (flexUserOrder.length < 2) return;
+
+    const [a, b] = flexUserOrder;
+    if (getMins3(a) === null || getMins3(b) === null) return;
+
+    const auto = FLEX_GROUPS.find(id => !flexUserOrder.includes(id));
+    const val = id => getMins3(id);
+    const msgBox = document.getElementById("flexSectorMsg");
+    let v, msg = "";
+
+    if (auto === "flexRestTimeOtpGroup") {
+        v = val("flexFirstOtpGroup") + val("flexSecondOtpGroup");
+        if (v <= 0) msg = "Rest time must be greater than 0:00";
+        else if (v > 599) msg = "Rest time exceeds 9:59";
+    } else if (auto === "flexFirstOtpGroup") {
+        v = val("flexRestTimeOtpGroup") - val("flexSecondOtpGroup");
+        if (v < 0) msg = "Second sector exceeds Rest time!";
+        else if (v === 0) msg = "Please select 1 sector";
+    } else {
+        v = val("flexRestTimeOtpGroup") - val("flexFirstOtpGroup");
+        if (v < 0) msg = "First sector exceeds Rest time!";
+        else if (v === 0) msg = "Please select 1 sector";
+    }
+
+    if (msg) { msgBox.innerText = msg; return; }
+    setGroupValue(auto, minsToHMM(v), true);
+}
+
+function calculateFlexSchedule() {
+    const box = document.getElementById("flexScheduleBox");
+    const tzGroup = document.getElementById("flexTzGroup");
+    const crewType = document.querySelector('input[name="crewType"]:checked').value;
+    const two = document.querySelector('input[name="flexSectorType"]:checked').value === "2";
+    box.style.display = "block";
+    tzGroup.style.display = "none";
+    flexSchedulesUtc = [];
+
+    const warn = t => { box.innerHTML = `<div class="warning-msg">${t}</div>`; };
+
+    const rawStart = getOtpValue("flexRestStartOtpGroup");
+    const startMins = rawStart.length === 4 ? getMinutesFromTimeString(rawStart) : null;
+    if (startMins === null) { warn("請輸入正確的 Rest Start (4碼數字，如 2300)"); return; }
+
+    const rest = getMins3("flexRestTimeOtpGroup");
+    if (rest === null) { warn("請輸入正確的 Rest time (3碼數字，如 245)"); return; }
+    if (rest <= 0) { warn("Rest time 必須大於 0"); return; }
+
+    const persons = (crewType === "multi") ? 3 : 2;
+    let durations = [];
+
+    if (!two) {
+        for (let i = 0; i < persons; i++) durations.push(rest);
+    } else {
+        const first = getMins3("flexFirstOtpGroup");
+        const second = getMins3("flexSecondOtpGroup");
+        if (first === null || second === null) { warn("請輸入兩個欄位，第三個欄位會自動計算"); return; }
+        if (first === 0 || second === 0) { warn("Please select 1 sector"); return; }
+        if (first + second !== rest) { warn("First sector + Second sector 必須等於 Rest time"); return; }
+        for (let i = 0; i < persons; i++) durations.push(first);
+        for (let i = 0; i < persons; i++) durations.push(second);
+    }
+
+    let cur = startMins;   // 從 Rest start 起算，不加 15 分鐘
+    durations.forEach((d, i) => {
+        flexSchedulesUtc.push({ label: `Rest ${i + 1}`, startMins: cur, endMins: cur + d });
+        cur += d;
+    });
+
+    renderFlexSchedule();
+    tzGroup.style.display = "block";
+}
+
+function renderFlexSchedule() {
+    if (!flexSchedulesUtc.length) return;
+    const tz = document.querySelector('input[name="flexTzDisplay"]:checked').value;
+    const offset = (tz === "tpe") ? 480 : 0;
+    let html = `<div class="schedule-header">Rest Schedule (${tz.toUpperCase()})</div>`;
+    flexSchedulesUtc.forEach(item => {
+        html += `
+            <div class="output-item">
+                <span class="output-label">${item.label}</span>
+                <span class="output-value">${formatMinutesToHHMM(item.startMins + offset)} - ${formatMinutesToHHMM(item.endMins + offset)}</span>
+            </div>`;
+    });
+    document.getElementById("flexScheduleBox").innerHTML = html;
+}
+
+function resetInflightRest() {
+    const inputs = document.querySelectorAll("#inflightPanel .otp-input");
+    inputs.forEach(input => input.value = "");
+
+    document.getElementById("crewMulti").checked = true;
+    document.getElementById("inflightTzUTC").checked = true;
+    document.getElementById("sector1").checked = true;
+    document.getElementById("flexSector1").checked = true;
+    document.getElementById("flexTzUTC").checked = true;
+    toggleFlexSectorView();
+
+    resetInflightStep2();
+}
+</script>
+</body>
+</html>
