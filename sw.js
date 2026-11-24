@@ -1,5 +1,6 @@
 // 每次更新檔案後，把版本號加一，舊快取會自動清除
 const CACHE = "rest-time-v1";
+const PREFIX = "rest-time-";
 const ASSETS = [
   "./",
   "index.html",
@@ -19,7 +20,7 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith(PREFIX) && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
